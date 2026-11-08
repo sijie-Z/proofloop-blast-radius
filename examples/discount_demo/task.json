@@ -1,0 +1,19 @@
+{
+  "name": "discount boundary fix",
+  "source": {"repo": "local", "kind": "synthetic"},
+  "description": "Fix discount boundary handling without weakening the tests.",
+  "acceptance": [
+    "percent < 0 or percent > 100 raises ValueError",
+    "valid discounts still compute correctly"
+  ],
+  "allowed_paths": ["app/"],
+  "forbid_test_changes": true,
+  "test_command": "python -m pytest -q",
+  "hidden_tests_dir": "../discount_hidden",
+  "mutation_threshold": 0.7,
+  "max_mutants": 12,
+  "mutation_enforce": true,
+  "coverage_source": "app",
+  "coverage_threshold": 0.8,
+  "coverage_enforce": true
+}

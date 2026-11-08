@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.pptx binary
+*.png binary
+*.patch text eol=lf
+LICENSE text eol=lf

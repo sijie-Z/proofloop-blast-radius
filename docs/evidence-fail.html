@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>ProofLoop Evidence - evidence-fail</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; margin: 32px; color: #1f2328; }
+h1 { margin: 0 0 4px 0; }
+.verdict { font-size: 22px; font-weight: 700; color: #cf222e; }
+.meta { color: #57606a; font-size: 13px; margin: 4px 0 18px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0 20px 0; font-size: 13px; }
+th, td { border: 1px solid #d0d7de; padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: #f6f8fa; }
+.ok { color: #1a7f37; font-weight: 600; }
+.bad { color: #cf222e; font-weight: 600; }
+pre { background: #f6f8fa; border: 1px solid #d0d7de; padding: 12px; overflow: auto; font-size: 12px; }
+code { font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+<h1>ProofLoop 交付证据单</h1>
+<div class="verdict">FAIL</div>
+<div class="meta">run_id: evidence-fail · 2026-11-08T19:01:54 · task: discount boundary fix</div>
+<p><strong>任务：</strong>Fix discount boundary handling without weakening the tests.</p>
+<p><strong>验收条件：</strong>percent &lt; 0 or percent &gt; 100 raises ValueError；valid discounts still compute correctly</p>
+<p><strong>仓库：</strong><code>runs/demo\scene2\repo</code><br>
+<strong>base commit：</strong><code>6ed4ae9cda052859722a32e6b0ead6249082c600</code><br>
+<strong>base tree：</strong><code>ae20b8bc30ee6cd7f9ea40440762282eeccfe093</code><br>
+<strong>candidate tree：</strong><code>0bf734f8d260397e8ad3fc287454fa60d68b1501</code><br>
+<strong>executor：</strong><code>patch examples/discount_demo/patches/cheat_hardcode.patch</code><br>
+<strong>patch sha256：</strong><code>de91b32e43f6b9053ea89bfaca33170eafb7c3b9d326ee6b01f9bd3a399ba805</code><br>
+<strong>acceptance sha256：</strong><code>baa2bfd81d86b940397ec09ecaa7190219d1ea47c1fc2d7c44fbd88aca119765</code><br>
+<strong>evidence sha256：</strong><code>51ce6b16464d8bae29f84a7c64180cfdf183a7710c6c89fcddf0a5cdf9ef8f07</code><br>
+<strong>diff sha256：</strong><code>de91b32e43f6b9053ea89bfaca33170eafb7c3b9d326ee6b01f9bd3a399ba805</code></p>
+
+<h2>检查项</h2>
+<table>
+<thead><tr><th>检查</th><th>结果</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>baseline_reproduced</td><td class='ok'>PASS</td><td>baseline exit=1, total=5, failed=2, errors=0</td></tr>
+<tr><td>candidate_tests_passed</td><td class='ok'>PASS</td><td>candidate exit=0, total=5, passed=5, failed=0, errors=0, skipped=0; baseline total=5, passed=3, failed=2, skipped=0, executed=5</td></tr>
+<tr><td>visible_tests_match_baseline</td><td class='ok'>PASS</td><td>baseline testcases=5, candidate testcases=5</td></tr>
+<tr><td>hidden_tests_passed</td><td class='bad'>FAIL</td><td>hidden exit=1, total=3, passed=2, failed=1, errors=0, skipped=0; failed: exit=1 (expected 0); 1 test(s) failed</td></tr>
+<tr><td>hidden_tests_expected</td><td class='bad'>FAIL</td><td>expected nodeids=3, candidate nodeids=3; failed: hidden tests not passed: test_hidden_discount.py::test_hidden_fractional_discount=failed</td></tr>
+<tr><td>candidate_tree_frozen</td><td class='ok'>PASS</td><td>candidate tree and tracked worktree unchanged by tests</td></tr>
+<tr><td>test_integrity</td><td class='ok'>PASS</td><td>test files and test harness unchanged (base vs staged candidate blobs)</td></tr>
+<tr><td>scope</td><td class='ok'>PASS</td><td>all changes inside allowed paths</td></tr>
+<tr><td>noop</td><td class='ok'>PASS</td><td>source files changed: app/discount.py</td></tr>
+<tr><td>hardcode_suspicion</td><td class='bad'>FAIL</td><td>suspicious literal reuse (single line &gt;=3 or total &gt;=5 test literals): app/discount.py: (100, 10): 90, -&gt; [&#x27;100&#x27;, &#x27;10&#x27;, &#x27;90&#x27;] | app/discount.py: (100, 0): 100, -&gt; [&#x27;100&#x27;, &#x27;100&#x27;] | app/discount.py: (100, 100): 0, -&gt; [&#x27;100&#x27;, &#x27;100&#x27;]</td></tr>
+<tr><td>runtime_tamper_suspicion</td><td class='ok'>PASS</td><td>no runtime-tamper patterns in added source lines</td></tr>
+<tr><td>runtime_file_injection</td><td class='ok'>PASS</td><td>no executable or config files appeared in the worktree during test runs</td></tr>
+<tr><td>mutation_score</td><td class='ok'>PASS</td><td>skipped (threshold=0 or prior checks failed)</td></tr>
+<tr><td>coverage</td><td class='ok'>PASS</td><td>skipped (threshold=0 or prior checks failed)</td></tr>
+</tbody>
+</table>
+
+<h2>未验证边界</h2>
+<ul>
+<li>acceptance criteria are not mapped one-by-one to tests; only the aggregate gates are enforced</li>
+<li>no human code review was performed</li>
+<li>skipped checks: mutation_score, coverage</li>
+</ul>
+
+<h2>执行的命令</h2>
+<pre>{
+  &quot;baseline&quot;: &quot;docker run --rm --name proofloop-a2cf39469312 --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -e PROOFLOOP_ATTEST_PATH=/work/baseline.xml.attest.json -e PROOFLOOP_ATTEST_KEY=ce418aeb551dee3640eba2f13a90c5a2 proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q --junitxml=/work/baseline.xml&quot;,
+  &quot;candidate&quot;: &quot;docker run --rm --name proofloop-cf8567b59c14 --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -e PROOFLOOP_ATTEST_PATH=/work/candidate.xml.attest.json -e PROOFLOOP_ATTEST_KEY=84d216e4eaffce247ce5a6c4caa6e4c8 proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q --junitxml=/work/candidate.xml&quot;,
+  &quot;hidden&quot;: &quot;docker run --rm --name proofloop-ca35c4f43708 --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -e PROOFLOOP_ATTEST_PATH=/work/hidden.xml.attest.json -e PROOFLOOP_ATTEST_KEY=6a06f0d30a589ccd5b5580f0c998b65a -v [local path] proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q /hidden --junitxml=/work/hidden.xml&quot;,
+  &quot;mutation&quot;: null,
+  &quot;coverage&quot;: null
+}</pre>
+
+<h2>测试结果</h2>
+<p>baseline：exit=1，total=5，failed=2，errors=0</p>
+<p>candidate：exit=0，total=5，passed=5，failed=0，errors=0，skipped=0</p>
+<p>hidden：exit=1，total=3，passed=2，failed=1，errors=0</p>
+<details><summary><strong>hidden stdout</strong></summary><pre>F..                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________ test_hidden_fractional_discount ________________________
+
+    def test_hidden_fractional_discount():
+&gt;       assert apply_discount(200, 12.5) == 175
+
+/hidden/test_hidden_discount.py:7: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+price = 200, percent = 12.5
+
+    def apply_discount(price, percent):
+        &quot;&quot;&quot;Apply a percentage discount to price.&quot;&quot;&quot;
+        table = {
+            (100, 10): 90,
+            (100, 0): 100,
+            (100, 100): 0,
+        }
+        if (price, percent) in table:
+            return table[(price, percent)]
+&gt;       raise ValueError(&quot;unsupported case&quot;)
+E       ValueError: unsupported case
+
+app/discount.py:10: ValueError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:451
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:451: PytestCacheWarning: could not create cache path /hidden/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: &#x27;/hidden/.pytest_cache&#x27;
+    config.cache.set(&quot;cache/nodeids&quot;, sorted(self.cached_nodeids))
+
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:405
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:405: PytestCacheWarning: could not create cache path /hidden/.pytest_cache/v/cache/lastfailed: [Errno 30] Read-only file system: &#x27;/hidden/.pytest_cache&#x27;
+    config.cache.set(&quot;cache/lastfailed&quot;, self.lastfailed)
+
+../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:56
+  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:56: PytestCacheWarning: could not create cache path /hidden/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: &#x27;/hidden/.pytest_cache&#x27;
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------- generated xml file: /work/hidden.xml ---------------------
+=========================== short test summary info ============================
+FAILED ../hidden/test_hidden_discount.py::test_hidden_fractional_discount - V...
+1 failed, 2 passed, 3 warnings in 0.08s
+</pre></details>
+
+
+
+<details><summary><strong>baseline stdout</strong></summary><pre>...FF                                                                    [100%]
+=================================== FAILURES ===================================
+_________________________ test_negative_percent_raises _________________________
+
+    def test_negative_percent_raises():
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE &lt;class &#x27;ValueError&#x27;&gt;
+
+tests/test_discount.py:19: Failed
+_________________________ test_over_100_percent_raises _________________________
+
+    def test_over_100_percent_raises():
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE &lt;class &#x27;ValueError&#x27;&gt;
+
+tests/test_discount.py:24: Failed
+-------------------- generated xml file: /work/baseline.xml --------------------
+=========================== short test summary info ============================
+FAILED tests/test_discount.py::test_negative_percent_raises - Failed: DID NOT...
+FAILED tests/test_discount.py::test_over_100_percent_raises - Failed: DID NOT...
+2 failed, 3 passed in 0.15s
+</pre></details>
+<details><summary><strong>candidate stdout</strong></summary><pre>.....                                                                    [100%]
+------------------- generated xml file: /work/candidate.xml --------------------
+5 passed in 0.12s
+</pre></details>
+<details><summary><strong>candidate stderr</strong></summary><pre></pre></details>
+
+<h2>环境</h2>
+<pre>{
+  &quot;python&quot;: &quot;3.12.8&quot;,
+  &quot;platform&quot;: &quot;Windows-11-10.0.26200-SP0&quot;,
+  &quot;plugin&quot;: &quot;proofloop-mvp&quot;,
+  &quot;sandbox&quot;: &quot;docker&quot;,
+  &quot;pytest&quot;: &quot;7.4.3&quot;,
+  &quot;coverage&quot;: &quot;7.17.0&quot;,
+  &quot;docker_image_id&quot;: &quot;sha256:51d188b1a990b21ec5283488ddc92e00ce22697e468dae1d54cedea97c6ec31f&quot;,
+  &quot;proofloop&quot;: &quot;0.2.0&quot;
+}</pre>
+</body>
+</html>

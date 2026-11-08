@@ -1,0 +1,8 @@
+{
+  "name": "baseline already green (negative control)",
+  "description": "The selected test already passes on the base commit; ProofLoop should return INSUFFICIENT_EVIDENCE.",
+  "acceptance": ["selected test passes before and after"],
+  "allowed_paths": ["app/"],
+  "forbid_test_changes": true,
+  "test_command": "python -m pytest -q tests/test_discount.py::test_normal_discount"
+}

@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proofloop"
+version = "0.2.0"
+description = "Independent acceptance and evidence layer for AI coding agents"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+dependencies = []
+
+[project.optional-dependencies]
+openjiuwen = ["openjiuwen==0.1.19.post3"]
+mcp = ["mcp>=1.0"]
+
+[project.scripts]
+proofloop = "proofloop.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["proofloop*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

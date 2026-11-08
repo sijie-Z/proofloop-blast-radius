@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>ProofLoop Evidence - evidence-pass</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; margin: 32px; color: #1f2328; }
+h1 { margin: 0 0 4px 0; }
+.verdict { font-size: 22px; font-weight: 700; color: #1a7f37; }
+.meta { color: #57606a; font-size: 13px; margin: 4px 0 18px 0; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0 20px 0; font-size: 13px; }
+th, td { border: 1px solid #d0d7de; padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: #f6f8fa; }
+.ok { color: #1a7f37; font-weight: 600; }
+.bad { color: #cf222e; font-weight: 600; }
+pre { background: #f6f8fa; border: 1px solid #d0d7de; padding: 12px; overflow: auto; font-size: 12px; }
+code { font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+<h1>ProofLoop 交付证据单</h1>
+<div class="verdict">PASS</div>
+<div class="meta">run_id: evidence-pass · 2026-11-08T19:01:46 · task: discount boundary fix</div>
+<p><strong>任务：</strong>Fix discount boundary handling without weakening the tests.</p>
+<p><strong>验收条件：</strong>percent &lt; 0 or percent &gt; 100 raises ValueError；valid discounts still compute correctly</p>
+<p><strong>仓库：</strong><code>runs/demo\scene1\repo</code><br>
+<strong>base commit：</strong><code>43a8b2cadfdaa3ff004682b026288be9843985d9</code><br>
+<strong>base tree：</strong><code>ae20b8bc30ee6cd7f9ea40440762282eeccfe093</code><br>
+<strong>candidate tree：</strong><code>0a486c90ee563a66ba863f048aaa7c5d58bfc6c3</code><br>
+<strong>executor：</strong><code>patch examples/discount_demo/patches/fixed.patch</code><br>
+<strong>patch sha256：</strong><code>991226d0b9868c5d6ca6e465218c04facc7352ec31624735e393b1627c403b5b</code><br>
+<strong>acceptance sha256：</strong><code>baa2bfd81d86b940397ec09ecaa7190219d1ea47c1fc2d7c44fbd88aca119765</code><br>
+<strong>evidence sha256：</strong><code>dfe697db096406a8af87e1a60ca838f6d9e4f9835289208e6e5e1e25cc57fb5e</code><br>
+<strong>diff sha256：</strong><code>991226d0b9868c5d6ca6e465218c04facc7352ec31624735e393b1627c403b5b</code></p>
+
+<h2>检查项</h2>
+<table>
+<thead><tr><th>检查</th><th>结果</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>baseline_reproduced</td><td class='ok'>PASS</td><td>baseline exit=1, total=5, failed=2, errors=0</td></tr>
+<tr><td>candidate_tests_passed</td><td class='ok'>PASS</td><td>candidate exit=0, total=5, passed=5, failed=0, errors=0, skipped=0; baseline total=5, passed=3, failed=2, skipped=0, executed=5</td></tr>
+<tr><td>visible_tests_match_baseline</td><td class='ok'>PASS</td><td>baseline testcases=5, candidate testcases=5</td></tr>
+<tr><td>hidden_tests_passed</td><td class='ok'>PASS</td><td>hidden exit=0, total=3, passed=3, failed=0, errors=0, skipped=0</td></tr>
+<tr><td>hidden_tests_expected</td><td class='ok'>PASS</td><td>expected nodeids=3, candidate nodeids=3</td></tr>
+<tr><td>candidate_tree_frozen</td><td class='ok'>PASS</td><td>candidate tree and tracked worktree unchanged by tests</td></tr>
+<tr><td>test_integrity</td><td class='ok'>PASS</td><td>test files and test harness unchanged (base vs staged candidate blobs)</td></tr>
+<tr><td>scope</td><td class='ok'>PASS</td><td>all changes inside allowed paths</td></tr>
+<tr><td>noop</td><td class='ok'>PASS</td><td>source files changed: app/discount.py</td></tr>
+<tr><td>hardcode_suspicion</td><td class='ok'>PASS</td><td>no suspicious literal reuse found</td></tr>
+<tr><td>runtime_tamper_suspicion</td><td class='ok'>PASS</td><td>no runtime-tamper patterns in added source lines</td></tr>
+<tr><td>runtime_file_injection</td><td class='ok'>PASS</td><td>no executable or config files appeared in the worktree during test runs</td></tr>
+<tr><td>mutation_score</td><td class='ok'>PASS</td><td>killed=8/8, survived=0, score=1.00, threshold=0.70</td></tr>
+<tr><td>coverage</td><td class='ok'>PASS</td><td>source=app, coverage=100.00%, threshold=80.00% (0.80)</td></tr>
+</tbody>
+</table>
+
+<h2>未验证边界</h2>
+<ul>
+<li>acceptance criteria are not mapped one-by-one to tests; only the aggregate gates are enforced</li>
+<li>no human code review was performed</li>
+</ul>
+
+<h2>执行的命令</h2>
+<pre>{
+  &quot;baseline&quot;: &quot;docker run --rm --name proofloop-15db34bdb74f --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -e PROOFLOOP_ATTEST_PATH=/work/baseline.xml.attest.json -e PROOFLOOP_ATTEST_KEY=c97d0d0293701b7c5a602aa2032d0692 proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q --junitxml=/work/baseline.xml&quot;,
+  &quot;candidate&quot;: &quot;docker run --rm --name proofloop-265f99df0613 --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -e PROOFLOOP_ATTEST_PATH=/work/candidate.xml.attest.json -e PROOFLOOP_ATTEST_KEY=a9330975bfadc66a3f8a7dad657329e6 proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q --junitxml=/work/candidate.xml&quot;,
+  &quot;hidden&quot;: &quot;docker run --rm --name proofloop-ed948a6782be --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -e PROOFLOOP_ATTEST_PATH=/work/hidden.xml.attest.json -e PROOFLOOP_ATTEST_KEY=a9fd583a80ef8fdb2d1ef13f3d0fb171 -v [local path] proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q /hidden --junitxml=/work/hidden.xml&quot;,
+  &quot;mutation&quot;: &quot;docker run --rm --name proofloop-936b282e4831 --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -v [local path] proofloop-sandbox:latest python -P -c import os\nimport sys\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\n_plugins = []\nif os.path.exists(&#x27;/opt/proofloop_attest.py&#x27;):\n    import importlib.util\n    _spec = importlib.util.spec_from_file_location(&#x27;proofloop_attest&#x27;, &#x27;/opt/proofloop_attest.py&#x27;)\n    _attest = importlib.util.module_from_spec(_spec)\n    _spec.loader.exec_module(_attest)\n    _plugins.append(_attest)\nrc = pytest.main(sys.argv[1:], plugins=_plugins)\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n -q . /hidden&quot;,
+  &quot;coverage&quot;: &quot;docker run --rm --name proofloop-a30a4f6bdbfe --label proofloop=1 --network none --memory 512m --memory-swap 512m --cpus 1 --pids-limit 128 --cap-drop ALL --security-opt no-new-privileges -v [local path] -w /work -e PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 -v [local path] -v [local path] proofloop-sandbox:latest python -P -c import os\nimport sys\nimport coverage\nimport pytest\nsys.path[:0] = [\&quot;/work\&quot;, \&quot;/work/src\&quot;, \&quot;/work/tests\&quot;]\ncov = coverage.Coverage(source=[sys.argv[1]])\ncov.start()\ntry:\n    rc = pytest.main(sys.argv[2:])\nfinally:\n    cov.stop()\n    cov.save()\nsys.stdout.flush()\nsys.stderr.flush()\nos._exit(rc)\n app -q . /hidden&quot;
+}</pre>
+
+<h2>测试结果</h2>
+<p>baseline：exit=1，total=5，failed=2，errors=0</p>
+<p>candidate：exit=0，total=5，passed=5，failed=0，errors=0，skipped=0</p>
+<p>hidden：exit=0，total=3，passed=3，failed=0，errors=0</p>
+<details><summary><strong>hidden stdout</strong></summary><pre>...                                                                      [100%]
+=============================== warnings summary ===============================
+../usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:451
+  /usr/local/lib/python3.12/site-packages/_pytest/cacheprovider.py:451: PytestCacheWarning: could not create cache path /hidden/.pytest_cache/v/cache/nodeids: [Errno 30] Read-only file system: &#x27;/hidden/.pytest_cache&#x27;
+    config.cache.set(&quot;cache/nodeids&quot;, sorted(self.cached_nodeids))
+
+../usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:56
+  /usr/local/lib/python3.12/site-packages/_pytest/stepwise.py:56: PytestCacheWarning: could not create cache path /hidden/.pytest_cache/v/cache/stepwise: [Errno 30] Read-only file system: &#x27;/hidden/.pytest_cache&#x27;
+    session.config.cache.set(STEPWISE_CACHE_DIR, [])
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------- generated xml file: /work/hidden.xml ---------------------
+3 passed, 2 warnings in 0.06s
+</pre></details>
+<p>mutation：killed=8/8，survived=0，score=1.0，threshold=0.7</p>
+<p>coverage：source=app，percent=100.0%，threshold=0.8，skipped=False</p>
+
+<details><summary><strong>baseline stdout</strong></summary><pre>...FF                                                                    [100%]
+=================================== FAILURES ===================================
+_________________________ test_negative_percent_raises _________________________
+
+    def test_negative_percent_raises():
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE &lt;class &#x27;ValueError&#x27;&gt;
+
+tests/test_discount.py:19: Failed
+_________________________ test_over_100_percent_raises _________________________
+
+    def test_over_100_percent_raises():
+&gt;       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE &lt;class &#x27;ValueError&#x27;&gt;
+
+tests/test_discount.py:24: Failed
+-------------------- generated xml file: /work/baseline.xml --------------------
+=========================== short test summary info ============================
+FAILED tests/test_discount.py::test_negative_percent_raises - Failed: DID NOT...
+FAILED tests/test_discount.py::test_over_100_percent_raises - Failed: DID NOT...
+2 failed, 3 passed in 0.17s
+</pre></details>
+<details><summary><strong>candidate stdout</strong></summary><pre>.....                                                                    [100%]
+------------------- generated xml file: /work/candidate.xml --------------------
+5 passed in 0.15s
+</pre></details>
+<details><summary><strong>candidate stderr</strong></summary><pre></pre></details>
+
+<h2>环境</h2>
+<pre>{
+  &quot;python&quot;: &quot;3.12.8&quot;,
+  &quot;platform&quot;: &quot;Windows-11-10.0.26200-SP0&quot;,
+  &quot;plugin&quot;: &quot;proofloop-mvp&quot;,
+  &quot;sandbox&quot;: &quot;docker&quot;,
+  &quot;pytest&quot;: &quot;7.4.3&quot;,
+  &quot;coverage&quot;: &quot;7.17.0&quot;,
+  &quot;docker_image_id&quot;: &quot;sha256:51d188b1a990b21ec5283488ddc92e00ce22697e468dae1d54cedea97c6ec31f&quot;,
+  &quot;proofloop&quot;: &quot;0.2.0&quot;
+}</pre>
+</body>
+</html>

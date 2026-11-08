@@ -1,0 +1,18 @@
+ProofLoop Blast Radius Zero
+Copyright 2026
+
+This product includes software derived from ProofLoop, an independent
+acceptance and evidence layer for AI coding agents, licensed under the
+Apache License, Version 2.0.
+
+The `proofloop/` package and `examples/` directory in this repository are a
+frozen subset of that project, adapted for the Vultr Agent Rush Hackathon
+(Blast Radius Zero track). Modifications: an agent layer driven by Vultr
+Serverless Inference, a Docker-sandboxed tool executor, and a one-command
+demo.
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.

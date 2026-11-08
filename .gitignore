@@ -1,0 +1,21 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# local working log
+STATUS.md
+
+# run artifacts and scratch
+runs/
+.scratch/
+*.log
+
+# python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+coverage.json
