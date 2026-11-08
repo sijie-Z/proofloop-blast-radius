@@ -73,6 +73,21 @@
 
     <section class="panel">
       <div class="panel-head">
+        <h2>Evidence &amp; replay</h2>
+        <span class="pill">hash + independent re-run</span>
+      </div>
+      <p class="muted">
+        Verify the evidence sheet against its sidecar, then replay the verification against the pristine repository.
+      </p>
+      <div class="controls-row">
+        <button id="verify" class="ghost">Verify evidence hash</button>
+        <button id="replay" class="ghost">Replay verification</button>
+      </div>
+      <div id="audit-result" class="probe-result"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
         <h2>Deterministic checks</h2>
         <span class="pill">14 gates · no model in the verdict path</span>
       </div>
