@@ -43,3 +43,12 @@ jobs:
         run: docker build -t proofloop-sandbox:latest --build-arg PIP_INDEX_URL=https://pypi.org/simple docker
       - name: Run keyless demo self-test
         run: python demo.py --agent-mode fixed --timeout 300
+      - name: Diagnose sandbox on failure
+        if: failure()
+        run: |
+          docker run --rm -v "$PWD/examples/discount_demo:/work" -w /work proofloop-sandbox:latest python -c "import sys,pytest; print(sys.version); print(pytest.__version__)"
+          docker run --rm -v "$PWD/examples/discount_demo:/work" -w /work proofloop-sandbox:latest python -m pytest -q --junitxml=/work/debug.xml || true
+          ls -la examples/discount_demo/debug.xml || true
+          for f in runs/demo-*/evidence-pass/evidence.json; do
+            python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); print('baseline exit:', d['baseline']['exit_code']); print('baseline stdout tail:', d['baseline']['stdout'][-1500:]); print('baseline stderr tail:', d['baseline']['stderr'][-1500:])" "$f"
+          done
