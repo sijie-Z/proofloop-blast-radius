@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ProofLoop — Blast Radius Zero</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="brand">ProofLoop <span>Blast Radius Zero</span></div>
+      <p class="tagline">Verifiable acceptance for coding agents that run untrusted code.</p>
+    </div>
+    <nav class="links">
+      <a href="https://github.com/sijie-Z/proofloop-blast-radius" target="_blank" rel="noreferrer">GitHub</a>
+      <a href="#" id="latest-link" hidden>Latest run</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="row two-one">
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Run the demo</h2>
+          <span class="pill">Vultr Serverless Inference + Docker sandbox</span>
+        </div>
+        <p class="muted">
+          The agent fixes a discount boundary bug; ProofLoop independently accepts or rejects the patch.
+          In Vultr mode the model runs server-side and the key never enters the sandbox.
+        </p>
+        <div class="controls-row">
+          <label class="field">
+            <span>Mode</span>
+            <select id="mode">
+              <option value="vultr">Vultr agent (real LLM)</option>
+              <option value="fixed">Bundled fix (keyless self-test)</option>
+            </select>
+          </label>
+          <button id="run" class="primary">Run demo</button>
+        </div>
+        <p id="notice" class="notice" role="status" aria-live="polite">Idle.</p>
+        <ol id="events" class="events"></ol>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2>Containment</h2>
+          <span class="pill mint">probe runs in a fresh container</span>
+        </div>
+        <p class="muted">
+          Process isolation, secret hygiene, resource limits and lifecycle discipline — verified from inside the box.
+        </p>
+        <button id="probe" class="ghost">Probe the sandbox</button>
+        <div id="probe-result" class="probe-result"></div>
+      </article>
+    </section>
+
+    <section class="verdicts">
+      <article class="verdict-card pass" id="pass-card">
+        <div class="eyebrow">SCENE 1 · AGENT FIX</div>
+        <div class="verdict" id="pass-verdict">—</div>
+        <div class="stats" id="pass-stats"></div>
+        <div class="scene-links" id="pass-links"></div>
+      </article>
+      <article class="verdict-card fail" id="fail-card">
+        <div class="eyebrow">SCENE 2 · CHEAT PATCH</div>
+        <div class="verdict" id="fail-verdict">—</div>
+        <div class="stats" id="fail-stats"></div>
+        <div class="scene-links" id="fail-links"></div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Deterministic checks</h2>
+        <span class="pill">14 gates · no model in the verdict path</span>
+      </div>
+      <div class="table-wrap">
+        <table id="checks">
+          <thead><tr><th>Check</th><th>Result</th><th>Detail</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="checks-note" class="muted">Run the demo to see the checks.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Agent transcript</h2>
+        <span class="pill">tool calls execute in the sandbox</span>
+      </div>
+      <div id="agent" class="agent"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>ProofLoop Blast Radius Zero · Apache-2.0 · derived from ProofLoop</span>
+    <span id="service-state" class="muted">checking service…</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

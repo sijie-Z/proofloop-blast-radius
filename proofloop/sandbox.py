@@ -359,6 +359,9 @@ def run_docker(
         "--security-opt",
         "no-new-privileges",
     ]
+    runtime = os.environ.get("PROOFLOOP_DOCKER_RUNTIME")
+    if runtime:
+        cmd += ["--runtime", runtime]
     if os.name != "nt":
         # --cap-drop ALL removes CAP_DAC_OVERRIDE, so container root cannot
         # write into a host workspace owned by another UID.  Run as the host

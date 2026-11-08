@@ -137,6 +137,14 @@ def summarize(data: dict | None) -> dict:
         "failed_checks": failed,
         "checks_passed": sum(1 for c in data.get("checks", []) if c.get("passed")),
         "checks_total": len(data.get("checks", [])),
+        "checks": [
+            {
+                "name": c.get("name", "unknown"),
+                "passed": bool(c.get("passed")),
+                "detail": str(c.get("detail", ""))[:500],
+            }
+            for c in data.get("checks", [])
+        ],
         "hidden": (data.get("hidden") or {}).get("stats"),
         "mutation": {
             "killed": (data.get("mutation") or {}).get("killed"),

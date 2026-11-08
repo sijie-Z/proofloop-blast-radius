@@ -78,6 +78,21 @@ Artifacts land in `runs/demo-<timestamp>/`:
 - `evidence-fail/evidence.json`, `evidence.sha256`, `report.html`
 - `scene1-agent.patch`, `agent_transcript.json`, `summary.json`
 
+## Web demo
+
+The same pipeline is exposed as a single-page control plane:
+
+```bash
+python -m pip install -r webapp/requirements.txt
+python -m uvicorn webapp.app:app --host 0.0.0.0 --port 8000
+```
+
+Open `http://localhost:8000`. The page runs the demo in Vultr mode (server-side key) or the keyless self-test, renders the 14 deterministic checks and evidence links, and includes a containment probe that runs a fresh hardened container.
+
+![ProofLoop web demo](docs/web-demo-hero.png)
+
+The Vultr key lives only in the control plane. The containment probe reports `network: blocked`, `secret_env: []`, and the UID/cgroup limits of the sandbox. See `webapp/README.md` for the endpoints and environment variables.
+
 ## The 14 deterministic checks
 
 | Check | What it catches |
