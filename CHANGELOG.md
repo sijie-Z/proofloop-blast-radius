@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.3 — 2026-11-08
+
+- CI now starts the web app, runs the containment probe, and runs the keyless demo through the web API.
+- The containment probe is UID-safe on POSIX: it falls back when the host UID has no passwd entry in the sandbox image.
+- Asserts `network == blocked`, `secret_env == []`, scene 1 PASS and scene 2 FAIL in CI.
+
 ## v0.1.2 — 2026-11-08
 
 - Web control plane (FastAPI + single-page UI), containment probe, sanitized evidence endpoints.
