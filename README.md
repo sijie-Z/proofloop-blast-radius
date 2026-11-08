@@ -140,6 +140,7 @@ docker/Dockerfile      sandbox image
 ## Slides and video
 
 - `slides/ProofLoop-BlastRadiusZero.pptx` — 8-slide deck (problem, architecture, sandbox, demo, evidence, limits).
+- `slides/ProofLoop-BlastRadiusZero.pdf` — PDF export for submission forms.
 - `VIDEO-SCRIPT.md` — 2.5-minute terminal recording script with narration and exact commands.
 
 ## Vultr notes
