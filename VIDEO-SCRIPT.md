@@ -1,80 +1,68 @@
 # 2.5-minute demo video — recording script
 
-This script records a real run: Vultr Serverless Inference drives the agent, and ProofLoop verifies the result. Record after `python smoke.py` reports `tool calling: OK`.
+Record a **real** run: Vultr Serverless Inference drives the agent, and ProofLoop verifies the result. The video must include at least one containment moment (Challenge 1 requirement).
 
 ## Setup
 
-- Terminal in the repository root, font size large enough for 1600×900.
-- `.env` contains `VULTR_INFERENCE_API_KEY` (never show `.env` on screen).
-- A browser tab ready to open `runs/demo-<timestamp>/evidence-pass/report.html`.
-- If `api.vultrinference.com` is not directly reachable, `.env` also contains the proxy line and `python smoke.py` already passes.
+- Public demo: `https://<your-vultr-domain>/` (deployed with `deploy/vultr-vm.md`).
+- Terminal on the VM or locally, repository root.
+- `.env` / `/etc/proofloop/proofloop.env` contains the Vultr key; never show it on screen.
+- Browser tab on the demo; terminal tab ready for `verify-evidence`.
+- If the endpoint is not directly reachable, set `VULTR_PROXY` in `.env` (local) or the systemd environment (VM).
 
 ## Timeline and narration
 
 ### 0:00–0:20 — What this is
 
-On screen: title slide, or the terminal with the README open.
+On screen: title slide, then the demo page.
 
-> "Coding agents can pass tests without fixing the bug: edit the tests, hardcode the expected values, or forge the report. ProofLoop is an independent acceptance layer. The agent edits code inside a Docker sandbox; a separate verifier decides whether the result is real."
+> "A coding agent can pass tests without fixing the bug: edit the tests, hardcode the expected values, or forge the report. ProofLoop is an independent acceptance layer. The agent edits code inside a Docker sandbox on Vultr; a separate verifier decides whether the result is real."
 
-中文对照：写代码的 Agent 可以通过改测试、硬编码、伪造报告来让测试变绿。ProofLoop 是独立验收层：Agent 在 Docker 沙箱里改代码，由另一个验证器决定结果是否可信。
+### 0:20–0:45 — The web console
 
-### 0:20–0:45 — Show the task
+On screen: the demo page at the public URL; point at the mode selector and the containment panel.
 
-On screen:
+> "This is the control plane on a Vultr Cloud Compute VM. It can run a real Vultr Serverless Inference agent or a keyless self-test. The Vultr key stays in the control plane; it never enters the sandbox."
 
-```bash
-cat examples/discount_demo/app/discount.py
-cat examples/discount_demo/tests/test_discount.py
-```
+### 0:45–1:15 — Containment moment (required)
 
-> "One small Python bug: discounts below zero or above one hundred percent must raise. The visible tests and the held-out tests both enforce it."
+On screen: click **Probe the sandbox**.
 
-### 0:45–1:15 — Smoke the Vultr path
+> "The containment probe starts a fresh container. It tries the network — blocked. It looks for secret-looking environment variables — none visible. It reports the limits: 512 megabytes, one CPU, all capabilities dropped, and on Linux the host UID."
 
-On screen:
+Let the badges render. This is the containment moment; keep it on screen for several seconds.
 
-```bash
-python smoke.py
-```
+### 1:15–1:55 — Real Vultr agent
 
-> "This is Vultr Serverless Inference speaking the OpenAI tool-calling protocol. The smoke test lists the live model catalog and forces one tool call."
+On screen: select **Vultr agent (real LLM)**, click **Run demo**. Point at the live stages.
 
-### 1:15–1:50 — Run the demo
+> "The ReAct loop reads the source, writes a fix, and runs pytest. Every tool call is a fresh container with no network and no key. The candidate patch then goes to ProofLoop, which re-runs it under its own sandbox."
 
-On screen:
+If the model takes longer than the recording budget, cut between the tool-call stage and the verdict; never fabricate a PASS.
 
-```bash
-python demo.py
-```
+### 1:55–2:20 — PASS evidence
 
-> "The ReAct loop reads the source, writes a fix, and runs pytest — every tool call executes in a fresh container with no network, 512 megabytes of RAM, one CPU, and all capabilities dropped. Then ProofLoop re-runs the patch under its own sandbox."
+On screen: scene 1 is **PASS**. Open **Open evidence report**.
 
-If the model takes longer than the recording budget, cut from the tool-call loop to the verdict lines; do not fabricate output.
+> "Fourteen deterministic checks: baseline reproduced, candidate tests, hidden tests, test integrity, scope, hardcoded literals, runtime tampering, mutation eight of eight, coverage one hundred percent."
 
-### 1:50–2:15 — Show the PASS evidence
-
-On screen: open `runs/demo-<timestamp>/evidence-pass/report.html`.
-
-> "Fourteen deterministic checks. The baseline bug reproduced, the candidate passed, the held-out tests passed, mutation score eight of eight, coverage one hundred percent. The evidence sheet is hash-addressed and replayable."
-
-Also run:
+Open `evidence.json`, then in the terminal:
 
 ```bash
-python -m proofloop verify-evidence --evidence runs/demo-<timestamp>/evidence-pass/evidence.json
+python -m proofloop verify-evidence --evidence webapp/runs/<run-id>/evidence-pass/evidence.json
 ```
 
-> "The hash matches. A human can replay the run instead of trusting the model."
+> "The evidence sheet is hash-addressed. A human can replay the run instead of trusting the model."
 
-### 2:15–2:35 — Show the FAIL evidence
+### 2:20–2:40 — FAIL evidence
 
-On screen: open `runs/demo-<timestamp>/evidence-fail/report.html`.
+On screen: scene 2 is **FAIL**; open the report.
 
-> "Same verifier, cheat patch: the hidden test fails, and the hardcoded lookup table is flagged. The transcript names exactly which checks failed."
+> "Same verifier, cheat patch: the hidden test fails and the hardcoded lookup table is flagged. The report names exactly which checks failed."
 
-### 2:35–2:45 — Close
+### 2:40–2:50 — Close
 
-On screen: the slides' closing slide.
+On screen: closing slide.
 
 > "Small, real, reproducible. Trust the evidence, not the agent."
 
@@ -83,4 +71,5 @@ On screen: the slides' closing slide.
 - Do not cut in a PASS that did not happen. If the network or model fails, show the blocker on screen and stop.
 - Keep the model name and the sandbox flags visible somewhere in the recording.
 - Do not show `.env`, API keys, or local absolute paths.
-- The stack self-test (`python demo.py --agent-mode fixed`) is not the LLM demo; do not present it as one.
+- The keyless self-test is not the LLM demo; do not present it as one.
+- The containment probe must be a real probe against the deployed sandbox.

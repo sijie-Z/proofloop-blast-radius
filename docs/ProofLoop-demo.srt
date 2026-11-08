@@ -1,0 +1,75 @@
+1
+00:00:00,000 --> 00:00:05,000
+A coding agent can pass tests without fixing the bug:
+
+2
+00:00:05,000 --> 00:00:10,000
+edit the tests, hardcode values, or forge the report.
+
+3
+00:00:10,000 --> 00:00:15,000
+ProofLoop is an independent acceptance layer for untrusted code.
+
+4
+00:00:15,000 --> 00:00:21,000
+The agent edits code inside a Docker sandbox on Vultr.
+
+5
+00:00:21,000 --> 00:00:27,000
+The control plane holds the Vultr key; it never enters the sandbox.
+
+6
+00:00:27,000 --> 00:00:33,000
+The containment probe starts a fresh container.
+
+7
+00:00:33,000 --> 00:00:38,000
+It tries the network — blocked.
+
+8
+00:00:38,000 --> 00:00:43,000
+Secret-looking environment variables — none visible.
+
+9
+00:00:43,000 --> 00:00:49,000
+512 megabytes, one CPU, all capabilities dropped.
+
+10
+00:00:49,000 --> 00:00:55,000
+Now a real Vultr Serverless Inference agent fixes the bug.
+
+11
+00:00:55,000 --> 00:01:01,000
+Every tool call is a fresh container with no network and no key.
+
+12
+00:01:01,000 --> 00:01:07,000
+ProofLoop re-runs the patch under its own sandbox.
+
+13
+00:01:07,000 --> 00:01:13,000
+Fourteen deterministic checks, hidden tests, mutation, coverage.
+
+14
+00:01:13,000 --> 00:01:19,000
+Scene one passes: fourteen of fourteen checks.
+
+15
+00:01:19,000 --> 00:01:25,000
+The evidence sheet is hash-addressed and replayable.
+
+16
+00:01:25,000 --> 00:01:31,000
+Same verifier, cheat patch: the hidden test fails.
+
+17
+00:01:31,000 --> 00:01:37,000
+The hardcoded lookup table is flagged by name.
+
+18
+00:01:37,000 --> 00:01:43,000
+Verify the evidence hash and replay the run.
+
+19
+00:01:43,000 --> 00:01:50,000
+Trust the evidence, not the agent.
