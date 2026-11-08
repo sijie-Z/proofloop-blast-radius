@@ -1,0 +1,12 @@
+# Replace demo.example.com with the VM's domain (DNS A/AAAA -> Vultr IP).
+# Caddy obtains and renews the TLS certificate automatically.
+demo.example.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8000
+}
+
+# No domain? Use the VM's public IP over plain HTTP instead:
+# :80 {
+# 	encode zstd gzip
+# 	reverse_proxy 127.0.0.1:8000
+# }

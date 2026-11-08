@@ -330,6 +330,68 @@ def build():
     # ---------------------------------------------------------------- slide 7
     slide = pres.slides.add_slide(blank)
     bg(slide, WHITE)
+    title(slide, "A web console with a containment view")
+    subtitle(slide, "Run the agent, watch the box, open the evidence.")
+    box, frame = card(slide, 0.8, 1.8, 5.6, 4.55, LIGHT)
+    frame.vertical_anchor = MSO_ANCHOR.TOP
+    para(frame, "RUN MODES", 10.5, True, GREEN, first=True, after=4)
+    para(frame, "Vultr agent — real LLM, server-side key", 12.5, False, INK, after=2)
+    para(frame, "Bundled fix — keyless self-test", 12.5, False, INK, after=12)
+    para(frame, "CONTAINMENT PROBE", 10.5, True, GREEN, after=4)
+    para(frame, "Network: blocked", 12.5, False, INK, after=2)
+    para(frame, "Secret-looking env: none visible", 12.5, False, INK, after=2)
+    para(frame, "512 MB · 1 CPU · cap-drop ALL", 12.5, False, INK, after=12)
+    para(frame, "EVIDENCE", 10.5, True, GREEN, after=4)
+    para(frame, "14 deterministic checks", 12.5, False, INK, after=2)
+    para(frame, "PASS / FAIL + report links", 12.5, False, INK)
+    shot = Path(__file__).resolve().parent.parent / "docs" / "web-demo-hero.png"
+    if shot.is_file():
+        slide.shapes.add_picture(str(shot), Inches(6.7), Inches(1.8), width=Inches(5.95))
+    frame = tb(slide, 6.7, 6.5, 5.95, 0.4)
+    para(frame, "UI preview from the keyless self-test; Vultr mode follows the same flow.",
+         10, False, MUTED, first=True)
+    footer(slide, 7)
+
+    # ---------------------------------------------------------------- slide 8
+    slide = pres.slides.add_slide(blank)
+    bg(slide, NAVY)
+    title(slide, "Deployed on Vultr", dark=True)
+    subtitle(slide, "One VM is the control layer; the sandbox is the blast radius.", dark=True)
+    box, frame = card(slide, 0.7, 1.9, 7.4, 4.5, PANEL, ICE, radius=0.05)
+    frame.vertical_anchor = MSO_ANCHOR.TOP
+    para(frame, "VULTR CLOUD COMPUTE · UBUNTU 24.04", 11, True, MINT, first=True, after=8)
+    inner = [
+        ("systemd", "uvicorn webapp:app"),
+        ("Caddy", "public TLS reverse proxy"),
+        ("Docker", "proofloop-sandbox:latest"),
+        ("workspace", "repo · venv · runs"),
+    ]
+    for index, (heading, body) in enumerate(inner):
+        row, col = divmod(index, 2)
+        x = 1.0 + col * 3.45
+        y = 2.55 + row * 1.35
+        box2, frame2 = card(slide, x, y, 3.2, 1.15, "202B63", radius=0.07)
+        frame2.vertical_anchor = MSO_ANCHOR.MIDDLE
+        para(frame2, heading, 15, True, WHITE, first=True)
+        para(frame2, body, 11, False, ICE)
+    box3, frame3 = card(slide, 8.6, 2.1, 3.9, 1.55, "1B4D3E", MINT, radius=0.06)
+    frame3.vertical_anchor = MSO_ANCHOR.MIDDLE
+    para(frame3, "Vultr Serverless Inference", 15, True, WHITE, first=True)
+    para(frame3, "api.vultrinference.com/v1", 11, False, ICE)
+    para(frame3, "OpenAI-compatible · tools", 11, False, ICE)
+    arrow(slide, 8.15, 2.6, 0.35, 0.3, MINT)
+    box4, frame4 = card(slide, 8.6, 4.35, 3.9, 1.15, PANEL, ICE, radius=0.06)
+    frame4.vertical_anchor = MSO_ANCHOR.MIDDLE
+    para(frame4, "Public URL", 15, True, WHITE, first=True)
+    para(frame4, "Caddy TLS · one run at a time", 11, False, ICE)
+    frame = tb(slide, 0.7, 6.55, 11.9, 0.4)
+    para(frame, "The key lives in /etc/proofloop/proofloop.env — never in the sandbox.",
+         14, True, ICE, first=True)
+    footer(slide, 8, dark=True)
+
+    # ---------------------------------------------------------------- slide 9
+    slide = pres.slides.add_slide(blank)
+    bg(slide, WHITE)
     title(slide, "Evidence you can replay")
     subtitle(slide, "Hash the sheet, replay the run, compare the verdict.")
     box, frame = card(slide, 0.8, 1.9, 5.3, 4.55, LIGHT)
@@ -367,7 +429,7 @@ def build():
              first=(line_text == code[0][0]))
     frame = tb(slide, 0.8, 6.55, 11.8, 0.4)
     para(frame, "A human reviews the evidence, not the model's claim.", 15, True, NAVY, first=True)
-    footer(slide, 7)
+    footer(slide, 9)
 
     # ---------------------------------------------------------------- slide 8
     slide = pres.slides.add_slide(blank)
@@ -398,7 +460,7 @@ def build():
     para(frame, "Small, real, reproducible.", 26, True, ICE, HEAD, first=True)
     frame = tb(slide, 0.8, 6.62, 11.8, 0.4)
     para(frame, "Trust the evidence, not the agent.", 13, False, SOFT, first=True)
-    footer(slide, 8, dark=True)
+    footer(slide, 10, dark=True)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     pres.save(OUT)

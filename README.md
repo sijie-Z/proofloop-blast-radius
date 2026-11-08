@@ -78,6 +78,21 @@ Artifacts land in `runs/demo-<timestamp>/`:
 - `evidence-fail/evidence.json`, `evidence.sha256`, `report.html`
 - `scene1-agent.patch`, `agent_transcript.json`, `summary.json`
 
+## Web demo
+
+The same pipeline is exposed as a single-page control plane:
+
+```bash
+python -m pip install -r webapp/requirements.txt
+python -m uvicorn webapp.app:app --host 0.0.0.0 --port 8000
+```
+
+Open `http://localhost:8000`. The page runs the demo in Vultr mode (server-side key) or the keyless self-test, renders the 14 deterministic checks and evidence links, and includes a containment probe that runs a fresh hardened container.
+
+![ProofLoop web demo](docs/web-demo-hero.png)
+
+The Vultr key lives only in the control plane. The containment probe reports `network: blocked`, `secret_env: []`, and the UID/cgroup limits of the sandbox. See `webapp/README.md` for the endpoints and environment variables.
+
 ## The 14 deterministic checks
 
 | Check | What it catches |
@@ -137,19 +152,59 @@ proofloop/             frozen ProofLoop acceptance/evidence subset
 examples/discount_demo deliberately buggy repo, fixes and cheat patches
 examples/discount_hidden  held-out tests
 docker/Dockerfile      sandbox image
+webapp/                FastAPI control plane + single-page UI
+deploy/                Vultr VM bootstrap, systemd, Caddy, gVisor guide
+ARCHITECTURE.md        trust boundaries, Vultr deployment, requirement mapping
 ```
 
 ## Slides and video
 
-- `slides/ProofLoop-BlastRadiusZero.pptx` — 8-slide deck (problem, architecture, sandbox, demo, evidence, limits).
+- `slides/ProofLoop-BlastRadiusZero.pptx` — 10-slide deck (problem, architecture, web console, Vultr deployment, sandbox, demo, evidence, limits).
 - `slides/ProofLoop-BlastRadiusZero.pdf` — PDF export for submission forms.
-- `VIDEO-SCRIPT.md` — 2.5-minute terminal recording script with narration and exact commands.
+- `docs/cover.png` — 16:9 cover image for the lablab submission.
+- `docs/ProofLoop-demo.srt` — English subtitles for the demo video.
+- `VIDEO-SCRIPT.md` — 2.5-minute web + terminal recording script with the required containment moment.
 
 ## Development workflow
 
 This repository follows Git Flow: `main` is the release branch, `develop` is the integration branch, and each `feature/*` branch carries exactly one issue and one pull request. CI runs unit tests on Python 3.11/3.12 plus a keyless demo self-test in Docker; both must be green before merge. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full branch, commit, release and review rules.
 
-## Vultr notes
+## Vultr deployment
+
+The production demo is a web application on a Vultr Cloud Compute VM. See [deploy/vultr-vm.md](deploy/vultr-vm.md) for the bootstrap script, systemd unit, Caddy TLS and optional gVisor.
+
+**Public demo URL:** _fill in after deploying to the Vultr VM_ (for example `https://demo.example.com`).
+
+| Vultr service | Role |
+| --- | --- |
+| Vultr Cloud Compute (Ubuntu 24.04 VM) | Runs the FastAPI control plane, Docker daemon, sandbox and verifier |
+| Vultr Serverless Inference (`https://api.vultrinference.com/v1`) | Agent LLM calls; default `deepseek-v4.1-flash-1017` |
+| Vultr firewall | Exposes only 22/80/443; the app port stays on loopback |
+| Vultr hackathon credits | $200 per participant, used for the VM and inference |
+
+`deploy/bootstrap.sh` installs Docker, builds `proofloop-sandbox:latest`, creates the virtualenv, writes the systemd unit and starts the service. The key goes in `/etc/proofloop/proofloop.env` (mode 640, root:proofloop), never in the repo or the sandbox. `deploy/verify-demo.sh` checks `/health` and the containment probe.
+
+### How Vultr powers the solution
+
+- The Vultr VM is the central control layer: web app, job manager, sandbox and verifier all run there.
+- Vultr Serverless Inference drives the agent's tool-calling loop through an OpenAI-compatible API.
+- Every agent tool call and every verifier test run executes in a locked-down Docker container on the VM; the key stays in the control plane.
+- The demo exposes a public URL for judges, with one run at a time and a 20/hour rate limit.
+
+## Track requirements (Blast Radius Zero)
+
+| Requirement | Implementation |
+| --- | --- |
+| Sandboxed code-execution agent | `agent/react_loop.py` + `webapp/` |
+| Vultr Serverless Inference | `agent/vultr_llm.py`, `smoke.py` |
+| Isolated execution (Docker / gVisor) | `proofloop/sandbox.py`, `PROOFLOOP_DOCKER_RUNTIME=runsc` |
+| No keys in the sandbox | key only in the control plane; containment probe reports `secret_env: []` |
+| Resource limits | 512 MB, 1 CPU, 128 PIDs, cap-drop ALL |
+| Lifecycle | fresh `--rm` container per tool call; per-run workspace |
+| Web app + public URL | `webapp/`, `deploy/vultr-vm.md` |
+| Containment moment in the video | containment probe in the UI; `VIDEO-SCRIPT.md` |
+
+## Vultr API notes
 
 - Base URL: `https://api.vultrinference.com/v1`
 - `GET /v1/models` is the live catalog (the older `/v1/chat/models` is retired)
