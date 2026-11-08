@@ -18,7 +18,7 @@ ROOT = WEB.parent
 app = FastAPI(
     title="ProofLoop Blast Radius Zero",
     description="Verifiable acceptance for coding agents running untrusted code.",
-    version="0.1.3",
+    version="0.1.4",
 )
 manager = jobs.RunManager(ROOT)
 app.mount("/static", StaticFiles(directory=str(WEB / "static")), name="static")
