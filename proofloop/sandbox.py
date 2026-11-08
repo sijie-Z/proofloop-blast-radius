@@ -358,6 +358,13 @@ def run_docker(
         "ALL",
         "--security-opt",
         "no-new-privileges",
+    ]
+    if os.name != "nt":
+        # --cap-drop ALL removes CAP_DAC_OVERRIDE, so container root cannot
+        # write into a host workspace owned by another UID.  Run as the host
+        # UID/GID on POSIX so JUnit reports and caches land in the mount.
+        cmd += ["--user", f"{os.getuid()}:{os.getgid()}", "-e", "HOME=/tmp"]
+    cmd += [
         "-v",
         f"{_mount_source(workdir)}:/work",
         "-w",
