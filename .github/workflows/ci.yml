@@ -47,6 +47,44 @@ jobs:
         run: docker build -t proofloop-sandbox:latest --build-arg PIP_INDEX_URL=https://pypi.org/simple docker
       - name: Run keyless demo self-test
         run: python demo.py --agent-mode fixed --timeout 300
+      - name: Install web dependencies
+        run: python -m pip install -r webapp/requirements.txt
+      - name: Start web app
+        run: |
+          python -m uvicorn webapp.app:app --host 127.0.0.1 --port 8000 &
+          echo $! > uvicorn.pid
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8000/health
+      - name: Containment probe
+        run: |
+          curl -fsS http://127.0.0.1:8000/api/containment -o containment.json
+          python -c "import json; d=json.load(open('containment.json')); assert d['network']=='blocked', d; assert d['secret_env']==[], d; print('containment OK', d)"
+      - name: Fixed demo through the web API
+        run: |
+          python - <<'PY'
+          import json, time, urllib.request
+          req = urllib.request.Request(
+              "http://127.0.0.1:8000/api/runs",
+              data=json.dumps({"mode": "fixed"}).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+          run = json.load(urllib.request.urlopen(req))
+          data = {}
+          for _ in range(120):
+              data = json.load(urllib.request.urlopen(f"http://127.0.0.1:8000/api/runs/{run['id']}"))
+              if data["status"] not in ("running", "queued"):
+                  break
+              time.sleep(3)
+          assert data.get("status") == "succeeded", data
+          assert data["pass_scene"]["verdict"] == "PASS", data["pass_scene"]
+          assert data["fail_scene"]["verdict"] == "FAIL", data["fail_scene"]
+          assert data["containment"]["network"] == "blocked", data["containment"]
+          print("web demo OK", run["id"])
+          PY
       - name: Diagnose sandbox on failure
         if: failure()
         run: |
@@ -56,3 +94,6 @@ jobs:
           for f in runs/demo-*/evidence-pass/evidence.json; do
             python -c "import json,sys; d=json.load(open(sys.argv[1],encoding='utf-8')); print('baseline exit:', d['baseline']['exit_code']); print('baseline stdout tail:', d['baseline']['stdout'][-1500:]); print('baseline stderr tail:', d['baseline']['stderr'][-1500:])" "$f"
           done
+      - name: Stop web app
+        if: always()
+        run: kill "$(cat uvicorn.pid)" 2>/dev/null || true
