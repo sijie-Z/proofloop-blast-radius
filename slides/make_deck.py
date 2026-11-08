@@ -346,8 +346,8 @@ def build():
     para(frame, "PASS / FAIL + report links", 12.5, False, INK)
     shot = Path(__file__).resolve().parent.parent / "docs" / "web-demo-hero.png"
     if shot.is_file():
-        slide.shapes.add_picture(str(shot), Inches(6.7), Inches(1.8), width=Inches(5.95))
-    frame = tb(slide, 6.7, 6.5, 5.95, 0.4)
+        slide.shapes.add_picture(str(shot), Inches(6.9), Inches(1.8), width=Inches(5.5))
+    frame = tb(slide, 6.9, 6.5, 5.5, 0.4)
     para(frame, "UI preview from the keyless self-test; Vultr mode follows the same flow.",
          10, False, MUTED, first=True)
     footer(slide, 7)

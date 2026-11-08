@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.4 — 2026-11-08
+
+- In-UI evidence hash verification and verification replay.
+- CI asserts `HASH OK`, `consistent: true`, and the replay verdict.
+- Refreshed UI screenshot, slide 7 and the video script.
+
 ## v0.1.3 — 2026-11-08
 
 - CI now starts the web app, runs the containment probe, and runs the keyless demo through the web API.
