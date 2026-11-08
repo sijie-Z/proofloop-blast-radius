@@ -72,6 +72,9 @@ def get_run(run_id: str):
     for key, scene in (("pass_scene", "pass"), ("fail_scene", "fail")):
         data[key]["report_url"] = f"/api/runs/{run_id}/report/{scene}"
         data[key]["evidence_url"] = f"/api/runs/{run_id}/evidence/{scene}"
+    replay = data.get("replay") or {}
+    if replay.get("output"):
+        replay["output"] = sanitize_text(replay["output"], manager.root)
     return data
 
 
@@ -90,6 +93,34 @@ def get_evidence(run_id: str, scene: str):
         raise HTTPException(404, "evidence not found")
     data = json.loads(path.read_text(encoding="utf-8"))
     return JSONResponse(sanitize_obj(data, manager.root))
+
+
+@app.post("/api/runs/{run_id}/verify-evidence")
+def verify_evidence(run_id: str):
+    try:
+        return manager.verify_evidence(run_id)
+    except KeyError:
+        raise HTTPException(404, "run not found")
+    except ValueError as exc:
+        raise HTTPException(409, str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            500, f"verify failed: {type(exc).__name__}: {exc}"
+        )
+
+
+@app.post("/api/runs/{run_id}/replay", status_code=202)
+def replay(run_id: str):
+    try:
+        return manager.start_replay(run_id)
+    except KeyError:
+        raise HTTPException(404, "run not found")
+    except jobs.RunBusy as exc:
+        raise HTTPException(409, str(exc))
+    except Exception as exc:
+        raise HTTPException(
+            500, f"replay failed: {type(exc).__name__}: {exc}"
+        )
 
 
 @app.get("/api/containment")

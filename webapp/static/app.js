@@ -48,7 +48,8 @@ async function poll() {
   try {
     const run = await api(`/api/runs/${activeId}`);
     renderRun(run);
-    if (run.status === "running" || run.status === "queued") {
+    const replaying = run.replay && run.replay.status === "running";
+    if (run.status === "running" || run.status === "queued" || replaying) {
       timer = setTimeout(poll, 2000);
     } else {
       $("notice").textContent = `Run ${run.id}: ${run.status}.`;
@@ -70,6 +71,7 @@ function renderRun(run) {
     : (run.fail_scene || {});
   renderChecks(checkScene);
   renderAgent(run.agent || {});
+  renderAudit(run);
   if (run.containment && Object.keys(run.containment).length) renderProbe(run.containment);
   if (run.status === "failed" && run.error) {
     $("notice").textContent = `Run ${run.id} failed: ${run.error}`;
@@ -157,6 +159,64 @@ function renderProbe(probe) {
   ).join("") + `<details><summary>Raw probe JSON</summary><pre>${esc(JSON.stringify(probe, null, 2))}</pre></details>`;
 }
 
+function renderVerify(result) {
+  const cls = result.ok ? "ok" : "bad";
+  return `<div class="probe-row"><span>Evidence hash</span><span class="badge ${cls}">${result.ok ? "HASH OK" : "MISMATCH"}</span></div>
+    <div class="probe-row"><span>expected</span><code>${esc((result.expected || "").slice(0, 24))}…</code></div>
+    <div class="probe-row"><span>actual</span><code>${esc((result.actual || "").slice(0, 24))}…</code></div>`;
+}
+
+function renderAudit(run) {
+  const parts = [];
+  if (run.verify && run.verify.status === "done") parts.push(renderVerify(run.verify));
+  const replay = run.replay || {};
+  if (replay.status === "running") {
+    parts.push(`<div class="probe-row"><span>Replay</span><span class="badge warn">RUNNING</span></div>`);
+  } else if (replay.status === "done") {
+    const cls = replay.ok ? "ok" : "bad";
+    parts.push(`<div class="probe-row"><span>Replay</span><span class="badge ${cls}">${replay.ok ? "CONSISTENT" : "MISMATCH"}</span></div>`);
+    parts.push(`<div class="probe-row"><span>new verdict</span><code>${esc(replay.new_verdict || "—")}</code></div>`);
+    parts.push(`<details><summary>Replay output</summary><pre>${esc(replay.output || "")}</pre></details>`);
+  } else if (replay.status === "failed") {
+    parts.push(`<div class="probe-row"><span>Replay</span><span class="badge bad">FAILED</span></div><p class="muted">${esc(replay.error || "")}</p>`);
+  }
+  $("audit-result").innerHTML = parts.join("") || '<p class="muted">Run the demo, then verify or replay the evidence.</p>';
+}
+
+async function verifyEvidence() {
+  if (!activeId) {
+    $("audit-result").innerHTML = '<p class="muted">Run the demo first.</p>';
+    return;
+  }
+  $("verify").disabled = true;
+  try {
+    const result = await api(`/api/runs/${activeId}/verify-evidence`, { method: "POST" });
+    $("audit-result").innerHTML = renderVerify(result);
+    poll();
+  } catch (error) {
+    $("audit-result").innerHTML = `<p><span class="badge bad">VERIFY FAILED</span></p><p class="muted">${esc(error.message)}</p>`;
+  } finally {
+    $("verify").disabled = false;
+  }
+}
+
+async function replayRun() {
+  if (!activeId) {
+    $("audit-result").innerHTML = '<p class="muted">Run the demo first.</p>';
+    return;
+  }
+  $("replay").disabled = true;
+  try {
+    await api(`/api/runs/${activeId}/replay`, { method: "POST" });
+    $("audit-result").innerHTML = '<p class="muted">Replaying the verification…</p>';
+    poll();
+  } catch (error) {
+    $("audit-result").innerHTML = `<p><span class="badge bad">REPLAY FAILED</span></p><p class="muted">${esc(error.message)}</p>`;
+  } finally {
+    $("replay").disabled = false;
+  }
+}
+
 async function probeSandbox() {
   $("probe").disabled = true;
   $("probe-result").innerHTML = `<p class="muted">Starting a fresh container…</p>`;
@@ -192,6 +252,8 @@ async function checkService() {
 
 $("run").addEventListener("click", startRun);
 $("probe").addEventListener("click", probeSandbox);
+$("verify").addEventListener("click", verifyEvidence);
+$("replay").addEventListener("click", replayRun);
 $("latest-link").addEventListener("click", (event) => {
   event.preventDefault();
   poll();

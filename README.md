@@ -89,6 +89,8 @@ python -m uvicorn webapp.app:app --host 0.0.0.0 --port 8000
 
 Open `http://localhost:8000`. The page runs the demo in Vultr mode (server-side key) or the keyless self-test, renders the 14 deterministic checks and evidence links, and includes a containment probe that runs a fresh hardened container.
 
+The UI can also **verify the evidence hash** and **replay the verification** against the pristine repository: the audit panel shows `HASH OK` and `CONSISTENT` with the new verdict.
+
 ![ProofLoop web demo](docs/web-demo-hero.png)
 
 The Vultr key lives only in the control plane. The containment probe reports `network: blocked`, `secret_env: []`, and the UID/cgroup limits of the sandbox. See `webapp/README.md` for the endpoints and environment variables.

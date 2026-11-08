@@ -6,9 +6,12 @@ sandbox containers never receive the key.
 """
 from __future__ import annotations
 
+import hmac
 import json
 import os
 import re
+import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -17,6 +20,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from demo import copy_demo_repo, copy_hidden, make_patch, run_verify, summarize
+from proofloop import evidence as evidence_mod
 from proofloop import snapshot
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,6 +58,8 @@ class RunState:
     fail_scene: dict = field(default_factory=dict)
     containment: dict = field(default_factory=dict)
     agent: dict = field(default_factory=dict)
+    verify: dict = field(default_factory=dict)
+    replay: dict = field(default_factory=dict)
     error: str = ""
 
     def to_dict(self) -> dict:
@@ -148,6 +154,139 @@ class RunManager:
 
     def _valid_id(self, run_id: str) -> bool:
         return bool(re.fullmatch(r"[0-9a-f]{12}", run_id or ""))
+
+    def _get(self, run_id: str):
+        with self._lock:
+            run = self._runs.get(run_id)
+        directory = self.run_dir(run_id)
+        if run is None or directory is None:
+            raise KeyError(run_id)
+        return run, directory
+
+    def verify_evidence(self, run_id: str) -> dict:
+        """Check evidence.json against its sidecar and embedded digest."""
+        run, directory = self._get(run_id)
+        evidence_path = directory / "evidence-pass" / "evidence.json"
+        sidecar = directory / "evidence-pass" / "evidence.sha256"
+        if not evidence_path.is_file() or not sidecar.is_file():
+            raise ValueError("evidence is not ready")
+        data = json.loads(evidence_path.read_text(encoding="utf-8"))
+        actual = evidence_mod.canonical_json_digest(data)
+        expected = sidecar.read_text(encoding="utf-8").strip()
+        embedded = data.get("evidence_sha256")
+        ok = bool(expected) and hmac.compare_digest(expected, actual)
+        if embedded and not hmac.compare_digest(str(embedded), actual):
+            ok = False
+        result = {
+            "status": "done",
+            "ok": ok,
+            "expected": expected,
+            "actual": actual,
+            "checked_at": _now(),
+        }
+        self._set(run, verify=result)
+        return result
+
+    def start_replay(self, run_id: str) -> dict:
+        """Re-run the verification and compare the verdict with the evidence."""
+        run, directory = self._get(run_id)
+        with self._lock:
+            if run.replay.get("status") == "running":
+                raise RunBusy("a replay is already running")
+            run.replay = {"status": "running", "started_at": _now()}
+            run.updated_at = _now()
+        threading.Thread(
+            target=self._replay_worker, args=(run, directory), daemon=True
+        ).start()
+        return run.replay
+
+    def _replay_worker(self, run: RunState, directory: Path):
+        try:
+            evidence_path = directory / "evidence-pass" / "evidence.json"
+            verify_repo = directory / "scene1" / "verify-repo"
+            task_path = verify_repo / "task.json"
+            patch = directory / "scene1-agent.patch"
+            if not patch.is_file():
+                patch = (
+                    self.root
+                    / "examples"
+                    / "discount_demo"
+                    / "patches"
+                    / "fixed.patch"
+                )
+            out = directory / f"replay-{int(time.time())}"
+            env = os.environ.copy()
+            env["PYTHONPATH"] = str(self.root) + os.pathsep + env.get("PYTHONPATH", "")
+            env["PYTHONIOENCODING"] = "utf-8"
+            allowed = [
+                str(verify_repo.parent),
+                str(self.root / "examples"),
+                str(self.root),
+            ]
+            if env.get("PROOFLOOP_ALLOWED_ROOTS"):
+                allowed.append(env["PROOFLOOP_ALLOWED_ROOTS"])
+            env["PROOFLOOP_ALLOWED_ROOTS"] = os.pathsep.join(allowed)
+            command = [
+                sys.executable,
+                "-m",
+                "proofloop",
+                "replay",
+                "--evidence",
+                str(evidence_path),
+                "--repo",
+                str(verify_repo),
+                "--task",
+                str(task_path),
+                "--patch",
+                str(patch),
+                "--out",
+                str(out),
+                "--sandbox",
+                "docker",
+                "--timeout",
+                str(self.timeout),
+            ]
+            result = subprocess.run(
+                command,
+                cwd=str(self.root),
+                env=env,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                stdin=subprocess.DEVNULL,
+                timeout=self.timeout * 4 + 300,
+            )
+            output = result.stdout or ""
+            if result.stderr:
+                output += "\n" + result.stderr
+            new_verdict = None
+            for line in output.splitlines():
+                if line.strip().startswith("new verdict:"):
+                    new_verdict = line.split(":", 1)[1].strip()
+            consistent = "consistent: True" in output
+            self._set(
+                run,
+                replay={
+                    "status": "done",
+                    "ok": consistent,
+                    "consistent": consistent,
+                    "new_verdict": new_verdict,
+                    "exit_code": result.returncode,
+                    "output": output[-4000:],
+                    "checked_at": _now(),
+                },
+            )
+        except Exception as exc:
+            self._set(
+                run,
+                replay={
+                    "status": "failed",
+                    "ok": False,
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "checked_at": _now(),
+                },
+            )
 
     def run_dir(self, run_id: str):
         if not self._valid_id(run_id):

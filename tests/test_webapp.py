@@ -1,9 +1,11 @@
+import json
 import time
 
 import pytest
 from fastapi.testclient import TestClient
 
 import webapp.app as app_module
+from proofloop import evidence as evidence_mod
 from webapp import jobs
 from webapp.sanitize import sanitize_obj, sanitize_text
 
@@ -74,3 +76,65 @@ def test_run_dir_traversal_rejected(tmp_path):
     assert manager.run_dir("../etc") is None
     assert manager.report_path("../../x", "pass") is None
     assert manager.evidence_path("not-a-run-id", "pass") is None
+
+
+def test_verify_evidence_hash(tmp_path):
+    run_id = "a" * 12
+    manager = jobs.RunManager(root=app_module.ROOT, runs_dir=tmp_path / "runs")
+    directory = tmp_path / "runs" / run_id / "evidence-pass"
+    directory.mkdir(parents=True)
+    data = {
+        "verdict": "PASS",
+        "task": {"name": "x", "description": "", "acceptance": []},
+        "checks": [],
+        "repo": "[project]",
+        "base_commit": "b",
+        "base_tree": "b",
+        "candidate_tree": "c",
+        "patch_sha256": "p",
+        "diff_sha256": "d",
+        "environment": {},
+    }
+    digest = evidence_mod.canonical_json_digest(data)
+    data["evidence_sha256"] = digest
+    (directory / "evidence.json").write_text(json.dumps(data), encoding="utf-8")
+    (directory / "evidence.sha256").write_text(digest + "\n", encoding="utf-8")
+    with manager._lock:
+        manager._runs[run_id] = jobs.RunState(
+            id=run_id, mode="fixed", status="succeeded"
+        )
+    assert manager.verify_evidence(run_id)["ok"] is True
+    data["verdict"] = "FAIL"
+    (directory / "evidence.json").write_text(json.dumps(data), encoding="utf-8")
+    assert manager.verify_evidence(run_id)["ok"] is False
+
+
+def test_replay_lifecycle_with_fake_worker(monkeypatch, tmp_path):
+    run_id = "b" * 12
+    manager = jobs.RunManager(root=app_module.ROOT, runs_dir=tmp_path / "runs")
+    (tmp_path / "runs" / run_id).mkdir(parents=True)
+    with manager._lock:
+        manager._runs[run_id] = jobs.RunState(
+            id=run_id, mode="fixed", status="succeeded"
+        )
+
+    def fake_worker(self, run, directory):
+        self._set(
+            run,
+            replay={
+                "status": "done",
+                "ok": True,
+                "consistent": True,
+                "new_verdict": "PASS",
+            },
+        )
+
+    monkeypatch.setattr(jobs.RunManager, "_replay_worker", fake_worker)
+    manager.start_replay(run_id)
+    deadline = time.time() + 3
+    while time.time() < deadline:
+        replay = manager.get(run_id)["replay"]
+        if replay.get("status") == "done":
+            break
+        time.sleep(0.02)
+    assert manager.get(run_id)["replay"]["ok"] is True

@@ -46,13 +46,15 @@ On screen: scene 1 is **PASS**. Open **Open evidence report**.
 
 > "Fourteen deterministic checks: baseline reproduced, candidate tests, hidden tests, test integrity, scope, hardcoded literals, runtime tampering, mutation eight of eight, coverage one hundred percent."
 
-Open `evidence.json`, then in the terminal:
+In the **Evidence & replay** panel, click **Verify evidence hash**, then **Replay verification**.
+
+> "The evidence sheet is hash-addressed — HASH OK. The verifier re-runs the patch from the pristine repository — CONSISTENT, new verdict PASS. A human can replay the run instead of trusting the model."
+
+Optionally show the terminal equivalent:
 
 ```bash
 python -m proofloop verify-evidence --evidence webapp/runs/<run-id>/evidence-pass/evidence.json
 ```
-
-> "The evidence sheet is hash-addressed. A human can replay the run instead of trusting the model."
 
 ### 2:20–2:40 — FAIL evidence
 

@@ -29,6 +29,8 @@ Open `http://localhost:8000`.
 | GET | `/api/runs/{id}` | Run state, stages, verdicts, checks, agent events |
 | GET | `/api/runs/{id}/report/{pass\|fail}` | Sanitized HTML evidence report |
 | GET | `/api/runs/{id}/evidence/{pass\|fail}` | Sanitized evidence JSON |
+| POST | `/api/runs/{id}/verify-evidence` | Check evidence.json against its sidecar and embedded digest |
+| POST | `/api/runs/{id}/replay` | Replay the verification and compare the verdict |
 | GET | `/api/containment` | Run the containment probe in a fresh container |
 
 ## Environment variables

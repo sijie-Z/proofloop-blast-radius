@@ -83,7 +83,24 @@ jobs:
           assert data["pass_scene"]["verdict"] == "PASS", data["pass_scene"]
           assert data["fail_scene"]["verdict"] == "FAIL", data["fail_scene"]
           assert data["containment"]["network"] == "blocked", data["containment"]
-          print("web demo OK", run["id"])
+          verify_req = urllib.request.Request(
+              f"http://127.0.0.1:8000/api/runs/{run['id']}/verify-evidence",
+              method="POST",
+          )
+          verified = json.load(urllib.request.urlopen(verify_req))
+          assert verified["ok"], verified
+          replay_req = urllib.request.Request(
+              f"http://127.0.0.1:8000/api/runs/{run['id']}/replay",
+              method="POST",
+          )
+          json.load(urllib.request.urlopen(replay_req))
+          for _ in range(120):
+              data = json.load(urllib.request.urlopen(f"http://127.0.0.1:8000/api/runs/{run['id']}"))
+              if data["replay"].get("status") != "running":
+                  break
+              time.sleep(3)
+          assert data["replay"].get("ok"), data["replay"]
+          print("web demo OK", run["id"], "hash OK, replay consistent")
           PY
       - name: Diagnose sandbox on failure
         if: failure()
