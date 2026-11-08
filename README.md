@@ -159,10 +159,11 @@ ARCHITECTURE.md        trust boundaries, Vultr deployment, requirement mapping
 
 ## Slides and video
 
-- `slides/ProofLoop-BlastRadiusZero.pptx` — 8-slide deck (problem, architecture, sandbox, demo, evidence, limits).
+- `slides/ProofLoop-BlastRadiusZero.pptx` — 10-slide deck (problem, architecture, web console, Vultr deployment, sandbox, demo, evidence, limits).
 - `slides/ProofLoop-BlastRadiusZero.pdf` — PDF export for submission forms.
 - `docs/cover.png` — 16:9 cover image for the lablab submission.
-- `VIDEO-SCRIPT.md` — 2.5-minute terminal recording script with narration and exact commands.
+- `docs/ProofLoop-demo.srt` — English subtitles for the demo video.
+- `VIDEO-SCRIPT.md` — 2.5-minute web + terminal recording script with the required containment moment.
 
 ## Development workflow
 
