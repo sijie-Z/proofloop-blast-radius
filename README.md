@@ -1,5 +1,7 @@
 # ProofLoop Blast Radius Zero
 
+[![CI](https://github.com/sijie-Z/proofloop-blast-radius/actions/workflows/ci.yml/badge.svg)](https://github.com/sijie-Z/proofloop-blast-radius/actions/workflows/ci.yml)
+
 **An independent acceptance and evidence layer for coding agents running untrusted code.**
 
 Built for the Vultr Agent Rush Hackathon (Blast Radius Zero track). An LLM agent edits code inside a hardened Docker sandbox — but the agent never gets to declare success. A separate verifier freezes the acceptance criteria, runs visible and hidden tests plus adversarial checks, and emits a tamper-evident, replayable evidence sheet that a human can sign off on.
@@ -142,6 +144,10 @@ docker/Dockerfile      sandbox image
 - `slides/ProofLoop-BlastRadiusZero.pptx` — 8-slide deck (problem, architecture, sandbox, demo, evidence, limits).
 - `slides/ProofLoop-BlastRadiusZero.pdf` — PDF export for submission forms.
 - `VIDEO-SCRIPT.md` — 2.5-minute terminal recording script with narration and exact commands.
+
+## Development workflow
+
+This repository follows Git Flow: `main` is the release branch, `develop` is the integration branch, and each `feature/*` branch carries exactly one issue and one pull request. CI runs unit tests on Python 3.11/3.12 plus a keyless demo self-test in Docker; both must be green before merge. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full branch, commit, release and review rules.
 
 ## Vultr notes
 
