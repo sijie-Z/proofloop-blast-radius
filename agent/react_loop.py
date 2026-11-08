@@ -96,6 +96,36 @@ _WRITE_CODE = (
     "print('wrote', p.stat().st_size, 'bytes to', sys.argv[1])\n"
 )
 
+_ATTEST_CODE = (
+    "import json\n"
+    "import os\n"
+    "import socket\n"
+    "from pathlib import Path\n"
+    "def read(path):\n"
+    "    p = Path(path)\n"
+    "    return p.read_text().strip() if p.is_file() else None\n"
+    "def network():\n"
+    "    try:\n"
+    "        s = socket.create_connection(('1.1.1.1', 80), 3)\n"
+    "        s.close()\n"
+    "        return 'reachable'\n"
+    "    except OSError:\n"
+    "        return 'blocked'\n"
+    "secret = sorted(\n"
+    "    key for key in os.environ\n"
+    "    if any(token in key.upper() for token in ('VULTR', 'TOKEN', 'SECRET', 'PASSWORD', 'API_KEY'))\n"
+    ")\n"
+    "report = {\n"
+    "    'uid': os.getuid() if hasattr(os, 'getuid') else None,\n"
+    "    'user': __import__('getpass').getuser(),\n"
+    "    'network': network(),\n"
+    "    'secret_env': secret,\n"
+    "    'memory_max': read('/sys/fs/cgroup/memory.max') or read('/sys/fs/cgroup/memory/memory.limit_in_bytes'),\n"
+    "    'cpu_max': read('/sys/fs/cgroup/cpu.max') or read('/sys/fs/cgroup/cpu/cpu.cfs_quota_us'),\n"
+    "}\n"
+    "print(json.dumps(report))\n"
+)
+
 _DENIED_WRITE_NAMES = {
     "conftest.py",
     "task.json",
@@ -192,6 +222,15 @@ class SandboxedRepo:
             "ALL",
             "--security-opt",
             "no-new-privileges",
+        ]
+        runtime = os.environ.get("PROOFLOOP_DOCKER_RUNTIME")
+        if runtime:
+            cmd += ["--runtime", runtime]
+        if os.name != "nt":
+            # The workspace is host-owned; with --cap-drop ALL the container
+            # root loses CAP_DAC_OVERRIDE and cannot write into it.
+            cmd += ["--user", f"{os.getuid()}:{os.getgid()}", "-e", "HOME=/tmp"]
+        cmd += [
             "-v",
             f"{_mount_source(self.root)}:/work",
             "-w",
@@ -251,6 +290,25 @@ class SandboxedRepo:
         if result.stderr:
             output += "\n[stderr]\n" + result.stderr
         return {"exit_code": result.returncode, "output": output[-8000:]}
+
+    def attest(self) -> dict:
+        """Run a containment probe in a fresh hardened container.
+
+        Reports whether the network is reachable, whether any secret-looking
+        environment variable is visible, and the UID/cgroup limits in force.
+        """
+        result = self._run(["python", "-c", _ATTEST_CODE], timeout=60)
+        data = {}
+        for line in reversed((result.stdout or "").strip().splitlines()):
+            try:
+                data = json.loads(line)
+                break
+            except json.JSONDecodeError:
+                continue
+        data["exit_code"] = result.returncode
+        if result.stderr:
+            data["stderr"] = result.stderr[-1000:]
+        return data
 
 
 def _parse_json_action(text: str):

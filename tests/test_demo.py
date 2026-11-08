@@ -27,4 +27,5 @@ def test_summarize_data():
     assert summary["verdict"] == "FAIL"
     assert summary["checks_passed"] == 1
     assert summary["checks_total"] == 2
+    assert len(summary["checks"]) == 2
     assert summary["failed_checks"] == ["b"]
